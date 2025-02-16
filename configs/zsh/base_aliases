@@ -1,0 +1,17 @@
+# Custom Aliases
+alias alert='echo "\a\a\a"'
+
+# SSH
+alias sshc='ssh -F /dev/null'
+alias sshv='ssh -N -L 5900:localhost:5900'
+alias remotedesktop='open "vnc://localhost"'
+
+# System Preferences
+alias bluetooth_audio_auto_connect_enable='sudo defaults write /Library/Preferences/com.apple.Bluetooth.plist DontPageAudioDevices 0'
+alias bluetooth_audio_auto_connect_disable='sudo defaults write /Library/Preferences/com.apple.Bluetooth.plist DontPageAudioDevices 1'
+alias time_machine_throttle_disable='sudo sysctl debug.lowpri\_throttle_enabled=0'
+alias time_machine_throttle_enable='sudo sysctl debug.lowpri\_throttle_enabled=1'
+
+# Chrome
+alias chrome_front_tabs_to_txt='osascript -e{'set text item delimiters to linefeed','tell app"google chrome"to url of tabs of window 1 as text'}'
+
