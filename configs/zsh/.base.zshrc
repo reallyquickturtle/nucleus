@@ -44,45 +44,63 @@ fi
 # Antigen Setup
 #######################
 
-# Source antigen with error handling
-if [[ -f $HOME/antigen.zsh ]]; then
-    source $HOME/antigen.zsh
-else
-    echo "Warning: antigen.zsh not found at $HOME/antigen.zsh"
-    return 1
+# Only in interactive shells
+[[ $- != *i* ]] && { ANTIGEN_SKIP=1; }
+
+# Resolve Antigen path (XDG-aware; override with ANTIGEN_HOME if you want)
+: ${XDG_DATA_HOME:="$HOME/.local/share"}
+ANTIGEN_HOME="${ANTIGEN_HOME:-$XDG_DATA_HOME/antigen}"
+ANTIGEN="${ANTIGEN:-$ANTIGEN_HOME/antigen.zsh}"
+
+# Soft bootstrap: fetch Antigen once if missing (interactive only)
+if [[ -z ${ANTIGEN_SKIP:-} && ! -f "$ANTIGEN" ]]; then
+  mkdir -p "$ANTIGEN_HOME"
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL "https://raw.githubusercontent.com/zsh-users/antigen/master/bin/antigen.zsh" -o "$ANTIGEN" || true
+  elif command -v wget >/dev/null 2>&1; then
+    wget -qO "$ANTIGEN" "https://raw.githubusercontent.com/zsh-users/antigen/master/bin/antigen.zsh" || true
+  fi
 fi
 
-antigen use oh-my-zsh
+# Load Antigen if available (don’t hard-fail if not)
+if [[ -r "$ANTIGEN" ]]; then
+  source "$ANTIGEN"
 
-# Core ZSH enhancements
-antigen bundle zsh-users/zsh-completions
-antigen bundle zsh-users/zsh-autosuggestions
+  antigen use oh-my-zsh
 
-# Git-related bundles
-antigen bundle git
-antigen bundle gitfast
-antigen bundle git-extras
+  # Core ZSH enhancements
+  antigen bundle zsh-users/zsh-completions
+  antigen bundle zsh-users/zsh-autosuggestions
 
-# Language and package management
-antigen bundle npm
-antigen bundle pip
-antigen bundle rust
+  # Git-related bundles
+  antigen bundle git
+  antigen bundle gitfast
+  antigen bundle git-extras
 
-# Cloud and platform tools
-antigen bundle aws
-antigen bundle heroku
-antigen bundle lein
+  # Language and package management
+  antigen bundle npm
+  antigen bundle pip
+  antigen bundle rust
 
-# System utilities
-antigen bundle command-not-found
+  # Cloud and platform tools
+  antigen bundle aws
+  antigen bundle heroku
+  antigen bundle lein
 
-# Syntax highlighting (keep last among plugins)
-antigen bundle zsh-users/zsh-syntax-highlighting
+  # System utilities
+  antigen bundle command-not-found
 
-# Theme
-antigen theme romkatv/powerlevel10k
+  # Syntax highlighting (keep last among plugins)
+  antigen bundle zsh-users/zsh-syntax-highlighting
 
-antigen apply
+  # Theme
+  antigen theme romkatv/powerlevel10k
+
+  antigen apply
+else
+  # Quiet warning; do not abort the rest of zshrc
+  [[ -z ${ANTIGEN_SKIP:-} ]] && print -r -- "Warning: Antigen not found at $ANTIGEN (skipping plugin init)" >&2
+fi
 
 
 #######################
