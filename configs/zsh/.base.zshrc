@@ -118,15 +118,41 @@ disable -f dirs 2>/dev/null
 
 
 #######################
-# Tool Configuration
+# Mise setup (auto-install)
 #######################
 
-# Mise setup
-if command -v mise &>/dev/null; then
-    eval "$(mise activate zsh)"
-    eval "$(mise completion zsh)"
-else
-    echo "Warning: mise not found"
+# Only run in interactive shells
+[[ $- != *i* ]] && return
+
+# Pick install dir (default: ~/.local/bin)
+: ${XDG_DATA_HOME:="$HOME/.local/share"}
+: ${XDG_BIN_HOME:="$HOME/.local/bin"}
+
+MISE_BIN="${XDG_BIN_HOME}/mise"
+
+if ! command -v mise >/dev/null 2>&1; then
+  echo "⚠️  mise not found; installing to $MISE_BIN"
+
+  mkdir -p "$XDG_BIN_HOME"
+
+  if command -v curl >/dev/null 2>&1; then
+    curl -fsSL https://mise.jdx.dev/install.sh | sh
+  elif command -v wget >/dev/null 2>&1; then
+    wget -qO- https://mise.jdx.dev/install.sh | sh
+  else
+    echo "⚠️  Neither curl nor wget found. Cannot install mise automatically." >&2
+  fi
+fi
+
+# Ensure mise is on PATH
+if [[ ":$PATH:" != *":$XDG_BIN_HOME:"* ]]; then
+  export PATH="$XDG_BIN_HOME:$PATH"
+fi
+
+# If mise is now available, init it
+if command -v mise >/dev/null 2>&1; then
+  eval "$(mise activate zsh)"
+  eval "$(mise completion zsh)"
 fi
 
 
